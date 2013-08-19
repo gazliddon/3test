@@ -1,0 +1,30 @@
+html, body
+{
+    height: 100%;
+    margin: 0px;
+    border: 0px;
+    padding: 0px;
+    font-family: verdana;
+}
+
+#container
+{
+    min-height: 100%; /* min. height for modern browser */
+    height:auto !important; /* important rule for modern Browser */
+    height:100%; /* min. height for IE */
+    overflow: hidden !important; /* FF scroll-bar */
+    background: red;
+}
+
+#info
+{
+	margin: 10px;
+	background: white;
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	z-index: 100;
+	padding: 10px;
+	border: 6px solid black;
+}
+
