@@ -22,9 +22,25 @@ define (require) ->
     [ [2.5,1,0],
       [4.5,1,0],
       [4.5,3,0],
-      [2.5,5,0],
-    ]
-  ]
+      [2.5,5,0]] ]
+
+
+  class GazArrowPool
+    constructor: (@scene, @numArrows) ->
+      @arrows = for [0 ... @numArrows]
+        new GazArrow()
+      @scene.add _arr.arr for _arr in @arrows
+      @reset()
+
+    reset: ->
+      _o.setVisible false for _o in @arrows
+      @index = 0
+
+    drawArrow: (_pos, _dir) ->
+      if @index != @numArrows
+        a = @arrows[@index]
+        a.set _pos, _dir, true
+        @index++
 
 
   class PolyTest
@@ -39,6 +55,7 @@ define (require) ->
       geo.vertices.push p.verts[0].vert
       line = new THREE.Line geo, new THREE.LineBasicMaterial
       { poly: p, line: line}
+
 
   class TestClass
 
@@ -85,8 +102,8 @@ define (require) ->
       pointLight.position.set 10,50, 130
       @scene.add(pointLight)
 
-      @makeArrowPool()
-
+      @arrows = new GazArrowPool @scene, 100
+ 
       @vel = new THREE.Vector3 0.25,0.13,0
 
       @scene.add @me
@@ -101,23 +118,12 @@ define (require) ->
 
       redraw()
 
-
-    makeArrowPool: ->
-      MAX_ARROWS = 100
-      @arrows = for [0 ... MAX_ARROWS]
-        new GazArrow()
-      @scene.add _arr.arr for _arr in @arrows
-      _o.setVisible false for _o in @arrows
- 
-
     genArrows: (_pos, _item) ->
-      _o.setVisible false for _o in @arrows
       verts = _item.getEdgeVerticies _pos
       tVec = new THREE.Vector3
-
       for _i in [0...verts.length]
-        v = verts[_i].vert; a = @arrows[_i]
-        a.set v, tVec.subVectors(v, _pos).normalize(), true
+        v = verts[_i].vert
+        @arrows.drawArrow v, tVec.subVectors(v, _pos).normalize()
 
     resize: ->
 
@@ -129,9 +135,12 @@ define (require) ->
       @vel.add diff
       @mesh.position.add @vel
 
-      for _i in @ptest.polys
-        @genArrows @mesh.position, _i.poly
+      @arrows.reset()
+
+      for _p in @ptest.polys
+        @genArrows @mesh.position, _p.poly
 
       @renderer.setClearColor 0x0000f0,1
+      
       @renderer.render @scene, @camera
 
