@@ -9,10 +9,10 @@ define (require) ->
 
     set: (_pos, _dir, _vis) ->
       @pos.copy _pos
-      @arr.setDirection _dir
+      @arr.setDirection _dir.clone()
       @setVisible _vis
-      @
-
+      @arr.setLength _dir.length()
+ 
     setVisible: (_val)->
       @arr.line.visible = _val
       @arr.cone.visible = _val
