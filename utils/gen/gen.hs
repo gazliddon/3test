@@ -1,8 +1,11 @@
-import System.Random
-import Data.List
-import Data.Function
+module Main (main) where
+
+import qualified System.Random as R
+import qualified Data.List as DL
+import qualified Data.Function as DF
 
 -- 3d Points - 9 lines for a simple vector class
+
 data Point = Pt {x,y,z :: Float} deriving (Show)
 fromArray [xx,yy,zz] = Pt xx yy zz
 sub (Pt x y z) (Pt x1 y1 z1) = Pt (x-x1) (y-y1) (z-z1)
@@ -13,6 +16,7 @@ scalarDivide val = scalarMultiply (1/val)
 lenSqr p = dot p p
 len p = sqrt $ lenSqr p
 unit p = scalarDivide (len p) p
+
 
 -- 2D angle between vectors / ignores z
 twopi = 2 * pi
@@ -39,14 +43,14 @@ convHull xs =
         (closest:sorted) = sortByAngle lastAngle currentPoint xs
         angleFromHere =    angleFromVec lastAngle currentPoint
 
-    (firstPoint:pointsSortedByX) = sortBy (compare `on` x) xs
+    (firstPoint:pointsSortedByX) = DL.sortBy (compare `DF.on` x) xs
 
 sortFunc myUp base a b = compare (angleFromVec myUp base a) (angleFromVec myUp base b)
-sortByAngle myUp base = sortBy (sortFunc myUp base)
+sortByAngle myUp base = DL.sortBy (sortFunc myUp base)
 
 --- Support nonsense for generating points and printing things out
 into3 (a:b:c:xs) = (a,b,c) : into3 xs
-randomPoints seed = map (\(x,y,z) -> Pt x y 0) $ into3 $ randomRs (0,1) (mkStdGen seed)
+randomPoints seed = map (\(x,y,z) -> Pt x y 0) $ into3 $ R.randomRs (0,1) (R.mkStdGen seed)
 
 generator fn funs n
   | n == 0 = []
@@ -60,7 +64,7 @@ cp = circPoints 10
 makeJson (Pt x y z) = "[ " ++ show x ++ ", " ++ show y ++ ", " ++ show z ++ "]" 
 
 hullStr chull = do
-    "[" ++ (intercalate "," (map makeJson chull)) ++ "]"
+    "[" ++ (DL.intercalate "," (map makeJson chull)) ++ "]"
 
 -- Test
 name = "objs"
