@@ -1,12 +1,4 @@
-module Gaz.Vec3 ( Vec3
-                , sub
-                , add
-                , dot
-                , scalarMultiply
-                , scalarDivide
-                , lenSqr
-                , len
-                , unit) where
+module Gaz.Vec3 where
 
 data Vec3 = V3 {x,y,z :: Float} deriving (Show)
 
@@ -19,4 +11,5 @@ scalarDivide val = scalarMultiply (1/val)
 lenSqr p = dot p p
 len p = sqrt $ lenSqr p
 unit p = scalarDivide (len p) p
+
 

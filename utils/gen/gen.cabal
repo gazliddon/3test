@@ -19,6 +19,6 @@ library
   build-depends: base ==4.6.*
 
 executable gen
-  main-is: main.hs             
-  build-depends: base ==4.6.*, random
+  main-is: main.hs    
+  build-depends: base ==4.6.*, random, Vec
 
