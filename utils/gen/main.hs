@@ -1,19 +1,28 @@
-
 module Main (main) where
 
 import qualified System.Random as R
 import qualified Data.List as DL
 import qualified Data.Function as DF
 import qualified Data.Vec as V
+import qualified GazVec as GV
+import CommandLine
+import qualified ConvHull as CH 
+
 
 -- Some helpy functions to use Data.Vec
 funcsToArray obj funcs = map ($ obj) funcs
+
 makeV3 x y z = V.Vec3F x y z
 makeV3FromArray [x,y,z] = makeV3 x y z
 arrayFromV3 v = funcsToArray v [x,y,z]  
-x v3 = V.get V.n0 v3
-y v3 = V.get V.n1 v3
-z v3 = V.get V.n2 v3
+
+makeV2 x y = V.Vec2F x y
+makeV2FromArray [x,y] = makeV2 x y
+arrayFromV2 v = funcsToArray v [x,y]  
+
+x v = V.get V.n0 v
+y v = V.get V.n1 v
+z v = V.get V.n2 v
 
 -- 2D angle between vectors / ignores z
 twopi = 2 * pi
@@ -23,7 +32,7 @@ angleFromVec myUp base a = angleAbs myUp (a - base)
 
 -- Build a convex hull from a cloud of random points on x,y plane
 -- outputs CW ordered points of hull
-
+convHull :: [V.Vec3F] -> [V.Vec3F]
 convHull xs =
   
   recur up $ sortByAngle up firstPoint pointsSortedByX
@@ -46,6 +55,7 @@ sortByAngle myUp base = DL.sortBy (sortFunc myUp base)
 --- Support nonsense for generating points and printing things out
 into3 (a:b:c:xs) = [a,b,c] : into3 xs
 randomPoints seed = map makeV3FromArray $ into3 $ R.randomRs (0,1) (R.mkStdGen seed)
+randomPoints2 seed = into3 $ R.randomRs (0,1) (R.mkStdGen seed)
 
 generator fn funs n
   | n == 0 = []
@@ -55,12 +65,14 @@ generator fn funs n
 
 circPoints n =  map makeV3FromArray $ generator (* (2 * pi)) [cos,sin,(*0)] n
 
-
 braceAndComma xs = "[" ++ (DL.intercalate "," xs) ++ "]"
 
 makeJson v =  braceAndComma $ map show (arrayFromV3 v)
 makeHullJson chull = braceAndComma (map makeJson chull)
 myHull = head (objList 1)
+
+toJson v = braceAndComma $ map show (GV.gv2intoVec v)
+newHull = CH.convHull $ map GV.makeGV2FromVec (take 100 (into3 $ R.randomRs (0,1) (R.mkStdGen seed)))
 
 -- Test
 name = "objs"
@@ -69,6 +81,7 @@ seed = 123
 complexity = 100
 
 objList seed =  convHull (take complexity (randomPoints seed)) : objList (seed +1)
+
 
 main =
   let

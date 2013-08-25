@@ -20,5 +20,5 @@ library
 
 executable gen
   main-is: main.hs    
-  build-depends: base ==4.6.*, random, Vec
+  build-depends: base ==4.6.*, random, Vec, cmdargs
 
