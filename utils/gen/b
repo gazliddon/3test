@@ -1,0 +1,2 @@
+rm dist/build/gen/gen-tmp/*.o
+cabal build

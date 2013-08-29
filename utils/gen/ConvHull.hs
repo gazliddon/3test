@@ -1,27 +1,34 @@
-module ConvHull (convHull) where
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, FunctionalDependencies #-}
 
-import Data.List (sortBy)
+module ConvHull  where
+
 import Data.Function (on)
-import GazVec
+import Data.List (sortBy)
 
-up  = makeGV2 0 1
-angleFromVec myUp base a = angleAbs myUp (a - base)
+class (Eq vec, Ord sortType) => Hullable vec sortType | vec -> sortType where
 
-convHull xs =
-  
-  recur up $ sortByAngle up firstPoint pointsSortedByX
+  hup :: vec
+  sub :: vec -> vec -> vec
+  initialSort :: [vec] -> [vec]
+  angleBetweenVectors :: vec -> vec -> sortType
 
-  where
+  getSortAngle :: vec -> vec -> vec -> sortType
+  getSortAngle basis a b = angleBetweenVectors basis (b `sub` a)
 
-    recur lastAngle (currentPoint:xs)
-      | angleFromHere firstPoint <= angleFromHere closest = [firstPoint]
-      | otherwise = closest : recur (closest - currentPoint) sorted
-      where
-        (closest:sorted) = sortByAngle lastAngle currentPoint xs
-        angleFromHere = angleFromVec lastAngle currentPoint
+  sortByAngle ::  vec -> vec -> [vec] -> [vec]
+  sortByAngle basis v0 xs = sortBy (compare `on` getSortAngle basis v0 ) xs
 
-    (firstPoint:pointsSortedByX) = sortBy (compare `on` x) xs
+  convHull :: [vec] -> [vec]
+  convHull xs = 
+      recur startPoint hup initiallySortedPoints
+    where
+      ( startPoint : initiallySortedPoints ) = initialSort xs
 
-sortByAngle myUp base = sortBy (compare `on` angleFromVec myUp base)
+      recur currentPoint lastAngle  xs
+        | currentPoint /= startPoint && angleFromCurrrentPoint startPoint <= angleFromCurrrentPoint closest = [startPoint]
+        | otherwise =  closest : recur closest (closest `sub` currentPoint) sortedByAngle
+        where
+          (closest : sortedByAngle ) = sortByAngle lastAngle currentPoint xs
+          angleFromCurrrentPoint = getSortAngle lastAngle currentPoint
 
 

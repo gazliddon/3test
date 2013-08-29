@@ -14,11 +14,8 @@ author: Gaz Liddon
 build-type:          Simple
 cabal-version:       >=1.8
 
-library
-  exposed-modules: Gaz.Vec3
-  build-depends: base ==4.6.*
-
 executable gen
   main-is: main.hs    
   build-depends: base ==4.6.*, random, Vec, cmdargs
+  other-modules: GazVec, CommandLine, ConvHull
 

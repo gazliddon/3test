@@ -1,7 +1,11 @@
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, FunctionalDependencies #-}
+
 module GazVec where
 
-import qualified Data.Vec as V
-import Data.Vec ( (:.)((:.)),getElem,Vec2,Vec3 )
+import Data.Function (on)
+import Data.List (sortBy)
+import Data.Vec
+import ConvHull 
 
 type GV2 = Vec2 Double
 type GV3 = Vec3 Double
@@ -15,14 +19,33 @@ makeGV3FromVec (x:y:z:_) = makeGV3 x y z
 gv2intoVec v = [(x v),(y v)]
 gv3intoVec v = [(x v),(y v),(z v)]
 
+x v = get n0 v
+y v = get n1 v
+z v = get n2 v
+w v = get n3 v
 
-x v = V.get V.n0 v
-y v = V.get V.n1 v
-z v = V.get V.n2 v
-w v = V.get V.n3 v
+gvAngleAbs :: GV2 -> GV2 -> Double
+gvAngleAbs a0 a1 = angleAbs (x a0) (y a0) (x a1) (y a1)
+
 
 -- 2D angle between vectors / ignores z
-twopi = 2 * pi
-angle v0 v1 = atan2 (x v1) (y v1) - atan2 (x v0) (y v0)
-angleAbs v v1 = if a < 0 then twopi + a else a where a = angle v v1
+angle x0 y0 x1 y1 = atan2 x1 y1 - atan2 x0 y0
+angleAbs x0 y0 x1 y1  =
+  if (signum a) == -1 then
+    pi + pi + a
+  else a
+  where a = angle x0 y0 x1 y1
+
+instance Hullable GV2 Double where 
+  hup = makeGV2 0 1
+  sub a b = (a - b)
+  initialSort xs = sortBy (compare `on` x) xs
+  angleBetweenVectors a b = gvAngleAbs a b
+
+convHullGV2 :: [GV2] -> [GV2]
+convHullGV2 a  = convHull a
+
+sortByAngleGV2 :: GV2 -> GV2 -> [GV2] -> [GV2]
+sortByAngleGV2 = sortByAngle 
+
 
