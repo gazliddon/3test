@@ -24,8 +24,9 @@ complexity = 100
 
 main =
   let
-    objList seed =  convHullGV2 (take complexity (randomPoints seed)) : objList (seed +1)
-    finalJSON = name ++ "=" ++ braceAndComma (map makeHullJson (take numOfObjs (objList seed)))
+    objList seed =  (convHullGV2 . take complexity . randomPoints $  seed) : objList (seed +1)
+
+    finalJSON = name ++ "=" ++ (braceAndComma . map makeHullJson . take numOfObjs . objList $ seed)
     oneHullPoints = take 9 $ randomPoints 10
     xSortedOneHullPoints = sortBy (compare `on` x) oneHullPoints
     oneHull = convHullGV2 oneHullPoints

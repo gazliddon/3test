@@ -25,8 +25,13 @@ class (Eq vec, Ord sortType) => Hullable vec sortType | vec -> sortType where
       ( startPoint : initiallySortedPoints ) = initialSort xs
 
       recur currentPoint lastAngle  xs
-        | currentPoint /= startPoint && angleFromCurrrentPoint startPoint <= angleFromCurrrentPoint closest = [startPoint]
+
+        | currentPoint /= startPoint &&
+          angleFromCurrrentPoint startPoint <= angleFromCurrrentPoint closest
+          = [startPoint]
+
         | otherwise =  closest : recur closest (closest `sub` currentPoint) sortedByAngle
+        
         where
           (closest : sortedByAngle ) = sortByAngle lastAngle currentPoint xs
           angleFromCurrrentPoint = getSortAngle lastAngle currentPoint
