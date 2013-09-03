@@ -7,7 +7,7 @@ define (require) ->
     constructor: (@data) ->
       @verts =  for _v in @data
         ray : []
-        vert: new THREE.Vector3 _v[0],_v[1],_v[2]
+        vert: new THREE.Vector3 _v[0],_v[1],0
 	
       tvec = new THREE.Vector3
 

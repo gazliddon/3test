@@ -1,19 +1,33 @@
 
+obj2 = [
+  [ 0.11774731, 0.98961514],
+  [ 0.67774004, 0.9883912],
+  [ 0.8310509, 0.95687395],
+  [ 0.9920345, 0.8808236],
+  [ 0.9953164, 0.61370814],
+  [ 0.9828928, 3.2733142e-2],
+  [ 0.95453143, 1.8860936e-2],
+  [ 0.8703773, 1.1655092e-3],
+  [ 0.71696794, 8.0269575e-4],
+  [ 0.1046952, 6.6679716e-3],
+  [ 5.395615e-2, 2.4766564e-2],
+  [ 1.930505e-2, 0.14342946],
+  [ 1.3690412e-2, 0.22301978],
+  [ 1.4182925e-3, 0.95569515]
+]
+
 obj = [
-  [ 0.11774731, 0.98961514, 0.0],
-  [ 0.67774004, 0.9883912, 0.0],
-  [ 0.8310509, 0.95687395, 0.0],
-  [ 0.9920345, 0.8808236, 0.0],
-  [ 0.9953164, 0.61370814, 0.0],
-  [ 0.9828928, 3.2733142e-2, 0.0],
-  [ 0.95453143, 1.8860936e-2, 0.0],
-  [ 0.8703773, 1.1655092e-3, 0.0],
-  [ 0.71696794, 8.0269575e-4, 0.0],
-  [ 0.1046952, 6.6679716e-3, 0.0],
-  [ 5.395615e-2, 2.4766564e-2, 0.0],
-  [ 1.930505e-2, 0.14342946, 0.0],
-  [ 1.3690412e-2, 0.22301978, 0.0],
-  [ 1.4182925e-3, 0.95569515, 0.0]
+  [4.258526651067196e-2,0.9038111336367954]
+,[9.266341274556411e-2,0.9442352098451056]
+,[0.2764148736226003,0.9907971986038043]
+,[0.8941779408851765,0.9958862886700675]
+,[0.9738796361307129,0.9193944312070681]
+,[0.9763210589830909,0.2977977544559932]
+,[0.9618442887371168,0.17179418102020383]
+,[0.9392606136850937,4.344026077460206e-3]
+,[0.47374288977160883,1.754781108775727e-2]
+,[0.1890946738046143,4.4369441591774694e-2]
+,[2.5989561886069268e-2,0.1459792010236184]
 ]
 
 makeTextSprite = (message, parameters) ->
@@ -86,17 +100,57 @@ roundRect = (ctx, x, y, w, h, r) ->
 
 
 define (require) ->
-  _ =        require 'underscore'
-  THREE =    require 'THREE'
-  $ =        require 'jquery'
+  _ =           require 'underscore'
+  THREE =       require 'THREE'
+  $ =           require 'jquery'
 
-  P2 =       require 'poly2tri'
-  Clip =     require 'clipper'
+  P2 =          require 'poly2tri'
+  ClipperLib =  require 'clipper'
 
-  GazArrow = require './gazarrow'
-  Colors =   require './colors'
-  Poly =     require './poly'
-  
+  GazArrow =    require './gazarrow'
+  Colors =      require './colors'
+  Poly =        require './poly'
+
+  class ScreenClipper
+    constructor : (@pos, @dims) ->
+      @scale = 4096
+      wd2 = (@dims[0]/2)*@scale;  hd2 = (@dims[1]/2)*@scale
+      clipPoly = [ [-wd2, -hd2],[wd2,-hd2],[wd2,hd2],[-wd2,hd2]]
+      @polygonToClipWith = new ClipperLib.Polygon()
+
+
+    clipPolygon : (_poly) ->
+      clipType = ClipperLib.ClipType.ctIntersection
+      subject_fillType = ClipperLib.PolyFillType.pftNonZero
+      clip_fillType = ClipperLib.PolyFillType.pftNonZero
+
+      cpr = new ClipperLib.Clipper()
+      cpr.AddPolygon @polygonToClipWith, ClipperLib.PolyType.ptClip
+      
+      subjPolygon = new ClipperLib.Polygon()
+      subjPolygon.push( ClipperLib.initPoint _v[0], _v[1]) for _v in _poly
+      cpr.AddPolygons subjPolygon, ClipperLib.PolyType.ptSubject
+
+      out = [[]]
+
+      cpr.Execute clipType, out, subject_fillType, clip_fillType
+      out
+
+
+  width = 5
+  height = 5
+  wD2 = width / 2
+  hD2 = height / 2
+
+  borderPoly =
+  [
+    [ -wD2, -hD2],
+    [ wD2, -hD2],
+    [ wD2, hD2],
+    [ -wD2, hD2],
+  ]
+
+
   items1 = [
     [ [0,0,0],
       [2,0,0],
@@ -157,8 +211,10 @@ define (require) ->
   class TestClass
 
     constructor: (@elem) ->
+      @clipper = new ScreenClipper([0,0],[width,height])
+
       console.log 'This is clipper'
-      console.log Clip
+      console.log ClipperLib
 
       console.log 'This is poly2tri'
       console.log P2
@@ -181,7 +237,7 @@ define (require) ->
       @camera = new THREE.PerspectiveCamera(50, @aspect, 1, 10000)
       
       # Place camera on y axis
-      @camera.position.set(0,0,3)
+      @camera.position.set(0,0,16)
       @camera.up = new THREE.Vector3(0,1,0)
       @camera.lookAt new THREE.Vector3(0,0,0)
       
@@ -202,20 +258,20 @@ define (require) ->
       @arrows = new GazArrowPool @scene, 1000
  
       @vel = new THREE.Vector3 0.25,0.13,0
-
       @scene.add @me
 
       @ptest = new PolyTest items
 
+      @bploy = makePolyAndLine borderPoly
+      @scene.add @bploy.line
+
       attrs =
         fontsize: 32
         backgroundColor:
-          r:100
-          g:255
-          b:100
-          a:1
+          r:100, g:255, b:100, a:1
 
       i = 0
+
       for _p in @ptest.polys
         @scene.add _p.line
         for _poly in @ptest.polyData
@@ -225,7 +281,6 @@ define (require) ->
             t.position.fromArray _v
             @scene.add t
             i++
-
 
       redraw = =>
         window.requestAnimationFrame redraw
@@ -251,6 +306,7 @@ define (require) ->
         z = _p.poly.makeShadowExtrusion @mesh.position, 25.5
         if z.length
           p = makePolyAndLine z
+          @clipper.clipPolygon p
           shadowPolys.push p.line
           @scene.add p.line
   
