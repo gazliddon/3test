@@ -1,12 +1,6 @@
 define (require) ->
-  _ =           require 'underscore'
   THREE =       require 'THREE'
-  $ =           require 'jquery'
-
-
   GazArrow =    require './gazarrow'
-  Colors =      require './colors'
-  Poly =        require './poly'
 
   class GazArrowPool
     constructor: (@scene, @numArrows) ->
@@ -18,6 +12,7 @@ define (require) ->
     reset: ->
       _o.setVisible false for _o in @arrows
       @index = 0
+
 
     drawArrow: (_pos, _dir) ->
       if @index != @numArrows
