@@ -98,7 +98,6 @@ roundRect = (ctx, x, y, w, h, r) ->
   ctx.fill()
   ctx.stroke()
 
-
 define (require) ->
   _ =           require 'underscore'
   THREE =       require 'THREE'
@@ -110,32 +109,7 @@ define (require) ->
   GazArrow =    require './gazarrow'
   Colors =      require './colors'
   Poly =        require './poly'
-
-  class ScreenClipper
-    constructor : (@pos, @dims) ->
-      @scale = 4096
-      wd2 = (@dims[0]/2)*@scale;  hd2 = (@dims[1]/2)*@scale
-      clipPoly = [ [-wd2, -hd2],[wd2,-hd2],[wd2,hd2],[-wd2,hd2]]
-      @polygonToClipWith = new ClipperLib.Polygon()
-
-
-    clipPolygon : (_poly) ->
-      clipType = ClipperLib.ClipType.ctIntersection
-      subject_fillType = ClipperLib.PolyFillType.pftNonZero
-      clip_fillType = ClipperLib.PolyFillType.pftNonZero
-
-      cpr = new ClipperLib.Clipper()
-      cpr.AddPolygon @polygonToClipWith, ClipperLib.PolyType.ptClip
-      
-      subjPolygon = new ClipperLib.Polygon()
-      subjPolygon.push( ClipperLib.initPoint _v[0], _v[1]) for _v in _poly
-      cpr.AddPolygons subjPolygon, ClipperLib.PolyType.ptSubject
-
-      out = [[]]
-
-      cpr.Execute clipType, out, subject_fillType, clip_fillType
-      out
-
+  ScreenClipper = require './screenclipper'
 
   width = 5
   height = 5
@@ -306,7 +280,7 @@ define (require) ->
         z = _p.poly.makeShadowExtrusion @mesh.position, 25.5
         if z.length
           p = makePolyAndLine z
-          @clipper.clipPolygon p
+          @clipper.clipPolygon p.poly.data
           shadowPolys.push p.line
           @scene.add p.line
   
