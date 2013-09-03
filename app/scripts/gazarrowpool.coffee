@@ -13,7 +13,6 @@ define (require) ->
       _o.setVisible false for _o in @arrows
       @index = 0
 
-
     drawArrow: (_pos, _dir) ->
       if @index != @numArrows
         a = @arrows[@index]

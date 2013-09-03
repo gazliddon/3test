@@ -30,10 +30,10 @@ define (require) ->
   hD2 = height / 2
 
   borderPoly  = [
-    [ -wD2, hD2],
-    [ wD2, hD2],
-    [ wD2, -hD2],
     [ -wD2, -hD2],
+    [ wD2, -hD2],
+    [ wD2, hD2],
+    [ -wD2, hD2],
   ]
 
   items = [ obj ]

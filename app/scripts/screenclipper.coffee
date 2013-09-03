@@ -15,15 +15,19 @@ define (require) ->
       clipType = ClipperLib.ClipType.ctUnion
 
       cpr = new ClipperLib.Clipper()
-      cpr.AddPolygon @polygonToClipWith, ClipperLib.PolyType.ptClip
+
+      clipPolygons = new ClipperLib.Polygons()
+      clipPolygons.push @polygonToClipWith
+      cpr.AddPolygons clipPolygons , ClipperLib.PolyType.ptClip
       
-      subjPolygon = @pointsToUpScaledPoly _poly
-      cpr.AddPolygons subjPolygon, ClipperLib.PolyType.ptSubject
+      subjPolygons = new ClipperLib.Polygons()
+      subjPolygons.push @pointsToUpScaledPoly _poly
+      cpr.AddPolygons subjPolygons, ClipperLib.PolyType.ptSubject
 
       out = [[]]
 
       cpr.Execute clipType, out, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero
       
-      [ _v[0] / @scale, _v[1] / @scale ] for _v in out
+      ([ _v.X / @scale, _v.Y / @scale ] for _v in out[0])
 
 
