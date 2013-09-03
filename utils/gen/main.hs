@@ -1,50 +1,37 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, FunctionalDependencies #-}
 
 module Main (main) where
 
 import Data.Function (on)
-import Data.List (sortBy)
 import qualified System.Random as R
 import qualified CommandLine as CL
-import Data.List (intercalate)
+import Data.List (intercalate, sortBy)
+
 import GazVec
 
 --- Support nonsense for generating points and printing things out
 into2 (a:b:xs) = [a,b] : into2 xs
 randomPoints seed = map makeGV2FromVec $ into2 $ R.randomRs (0,1) (R.mkStdGen seed)
 braceAndComma xs = "[" ++ intercalate "," xs ++ "]\n"
-makeJson v =  braceAndComma $ map show (gv2intoVec v)
-makeHullJson chull = braceAndComma (map makeJson chull)
+hullAsJson =  braceAndComma . map show . gv2intoVec
 
 -- Instance infomation for convHull w GV2
-name = "objs"
-numOfObjs = 3
-seed = 123
-complexity = 100
+objList seed complexity =  (convHullGV2 . take complexity . randomPoints) seed : objList (seed +1) complexity
+objsToJson name numOfObjs seed complexity = braceAndComma . map hullAsJson . take numOfObjs $ objList seed complexity
 
-main =
+makeIt comLine =
   let
-    objList seed =  (convHullGV2 . take complexity . randomPoints $  seed) : objList (seed +1)
+    ( seed, complexity, name, numOfObjs ) = (CL.seed comLine, CL.complexity comLine, "obj", CL.numOfObjs comLine)
+  in
+    ( objsToJson name numOfObjs seed complexity, "oof")
 
-    finalJSON = name ++ "=" ++ (braceAndComma . map makeHullJson . take numOfObjs . objList $ seed)
-    oneHullPoints = take 9 $ randomPoints 10
-    xSortedOneHullPoints = sortBy (compare `on` x) oneHullPoints
-    oneHull = convHullGV2 oneHullPoints
+writeIt ( contents : fileName) = "wrote " ++ fileName
 
-    (fst:xs) = xSortedOneHullPoints
-    sortedByangle = fst : sortByAngleGV2 (makeGV2 0 1) fst xs
-   
+commandLineToFile comLine
+  | CL.outFile comLine == "" = ("error","No file to write")
+  | otherwise = (writeIt . makeIt) comLine
 
-  in do
-    putStrLn "Original points"
-    putStrLn  $ makeHullJson oneHullPoints
+main = do
+    comLine <- CL.commandLine
+    putStrLn (commandLineToFile comLine)
 
-    putStrLn "Sorted X"
-    putStrLn  $ makeHullJson  xSortedOneHullPoints
-
-    putStrLn "Sorted X and then angle"
-    putStrLn  $ makeHullJson sortedByangle
-
-    putStrLn "Hull"
-    putStrLn  $ makeHullJson oneHull
 

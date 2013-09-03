@@ -4,24 +4,20 @@ module CommandLine where
 import System.Console.CmdArgs
 
 data CommandLine = CommandLine
-  { outFile :: String
-  , numOfObjs :: Integer
-  , complexity :: Integer
+  { outFile :: FilePath
+  , numOfObjs :: Int
+  , complexity :: Int
   , objectName :: String
-  , seed :: Integer
-}
+  , seed :: Int }
+  deriving (Show, Data, Typeable)
 
 commandLineOpts = CommandLine
-  { outFile =   def &= name "o" &= typFile &= help "Output file"
-  , numOfObjs = def &= name "n" &= typ "NUM" &= help "Number of hulls to generate"
-  , complexity = def &= name "c" &= typ "NUM" &= help "Points per object"
-  , objectName = def &= name "e" &= typFile &= help "Object name"
+  { outFile =   "" &= typFile &= help "Output file name"
+  , numOfObjs = 1 &= name "n" &= typ "NUM" &= help "Number of hulls to generate"
+  , complexity = 20 &= name "c" &= typ "NUM" &= help "Points per object"
+  , objectName = "test" &= name "e" &= typFile &= help "Object name"
   , seed = 123
   }
 
-data Sample = Sample {hello :: String}
-              deriving (Show, Data, Typeable)
+commandLine = cmdArgs commandLineOpts
 
-sample = Sample{hello = def}
-
-commandLine = print =<< cmdArgs sample
