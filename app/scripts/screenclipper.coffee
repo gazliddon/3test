@@ -1,28 +1,18 @@
 define (require) ->
-
   ClipperLib =  require 'clipper'
 
   class ScreenClipper
     pointsToUpScaledPoly: (_points) ->
       poly = new ClipperLib.Polygon()
-
-      for _v in _points
-        p = new ClipperLib.IntPoint _v[0]*@scale, _v[1]*@scale
-        poly.push p
+      poly.push(new ClipperLib.IntPoint _v[0]*@scale, _v[1]*@scale) for _v in _points
       poly
 
-    constructor : (@pos, @dims) ->
+    constructor : (@points) ->
       @scale = 4096
-      wd2 = (@dims[0]/2);  hd2 = (@dims[1]/2)
-      
-      clipPoly = [ [-wd2, hd2],[wd2,hd2],[wd2,-hd2],[-wd2,-hd2]]
-      
-      @polygonToClipWith = @pointsToUpScaledPoly clipPoly
+      @polygonToClipWith = @pointsToUpScaledPoly @points
 
     clipPolygon : (_poly) ->
       clipType = ClipperLib.ClipType.ctUnion
-      subject_fillType = ClipperLib.PolyFillType.pftNonZero
-      clip_fillType = ClipperLib.PolyFillType.pftNonZero
 
       cpr = new ClipperLib.Clipper()
       cpr.AddPolygon @polygonToClipWith, ClipperLib.PolyType.ptClip
@@ -32,7 +22,7 @@ define (require) ->
 
       out = [[]]
 
-      cpr.Execute clipType, out, subject_fillType, clip_fillType
+      cpr.Execute clipType, out, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero
       
       [ _v[0] / @scale, _v[1] / @scale ] for _v in out
 
