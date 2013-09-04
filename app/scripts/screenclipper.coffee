@@ -7,12 +7,16 @@ define (require) ->
       poly.push(new ClipperLib.IntPoint _v[0]*@scale, _v[1]*@scale) for _v in _points
       poly
 
+    clipperOutputToPoints: (_clipOut) ->
+      for _p in _clipOut
+        ([ _v.X / @scale, _v.Y / @scale ] for _v in _p)
+
     constructor : (@points) ->
       @scale = 4096
       @polygonToClipWith = @pointsToUpScaledPoly @points
 
     clipPolygon : (_poly) ->
-      clipType = ClipperLib.ClipType.ctUnion
+      clipType = ClipperLib.ClipType.ctIntersection
 
       cpr = new ClipperLib.Clipper()
 
@@ -29,5 +33,6 @@ define (require) ->
       cpr.Execute clipType, out, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero
       
       ([ _v.X / @scale, _v.Y / @scale ] for _v in out[0])
+
 
 

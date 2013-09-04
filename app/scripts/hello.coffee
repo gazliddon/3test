@@ -124,11 +124,13 @@ define (require) ->
   
       for _p in @ptest.polys
         z = _p.poly.makeShadowExtrusion @mesh.position, 25.5
+
         if z.length
-          p = makePolyAndLine z
-          @clipper.clipPolygon p.poly.data
-          shadowPolys.push p.line
-          @scene.add p.line
+          shadowPoly = makePolyAndLine z
+          clippedShadowPoly = makePolyAndLine (@clipper.clipPolygon shadowPoly.poly.data)
+          p = clippedShadowPoly.line
+          shadowPolys.push p
+          @scene.add p
   
       @renderer.setClearColor 0x0000f0,1
       @renderer.render @scene, @camera
